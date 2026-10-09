@@ -1,0 +1,34 @@
+{
+  "description": "Reglas de la casa de TaskFlow: secretos, dependencias, capas y suite en verde",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/scripts/proteger_secretos.sh", "args": [] }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/scripts/sin_dependencias_nuevas.sh", "args": [] }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/scripts/comprobar_capas.py", "args": [] }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/scripts/suite_en_verde.sh", "args": [], "timeout": 300 }
+        ]
+      }
+    ]
+  }
+}

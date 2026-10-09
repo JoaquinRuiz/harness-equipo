@@ -1,0 +1,12 @@
+{
+  "name": "harness-equipo",
+  "owner": { "name": "JoaquinRuiz" },
+  "metadata": { "description": "Harness de equipo para TaskFlow: reglas de la casa como skill y hooks" },
+  "plugins": [
+    {
+      "name": "equipo",
+      "source": "./plugins/equipo",
+      "description": "Reglas de la casa de TaskFlow: receta de nuevo endpoint y hooks que protegen secretos, dependencias, capas y suite en verde"
+    }
+  ]
+}
