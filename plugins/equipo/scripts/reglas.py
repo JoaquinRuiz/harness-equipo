@@ -9,6 +9,9 @@ Uso desde un hook (lee la entrada JSON del hook por stdin):
   reglas.py toca-env          # exit 0 e imprime qué toca si la llamada nombra el .env
   reglas.py es-dependencias   # exit 0 e imprime la ruta si edita un fichero de dependencias
   reglas.py apuntar-inicio    # SessionStart: apunta en .git el commit en el que empieza la sesión
+  reglas.py activo            # exit 0 si el repo tiene el marcador .harness-equipo en su raíz
+
+Todas las órdenes que leen la entrada del hook no hacen nada en un repo sin marcador.
 """
 import ast
 import fnmatch
@@ -21,6 +24,10 @@ from collections import Counter
 from pathlib import Path
 
 # --- Convenciones del equipo ---------------------------------------------------
+
+# Activación · Los hooks solo actúan en los repos que lo piden con este fichero, versionado en la raíz.
+# Sin él no hacen nada aunque el plugin esté instalado (por ejemplo, a nivel de usuario).
+MARCADOR = ".harness-equipo"
 
 # R1 · Donde sí se puede tocar la base de datos.
 CAPA_DATOS = ("app/repositories/", "app/models/", "app/extensions.py")
@@ -223,16 +230,41 @@ def imports_no_aprobados(codigo_base, codigo_final, permitidos):
 
 # --- R5 · El .env ni se lee ni se edita ------------------------------------------
 
+def _alternativas(glob):
+    """Expande las llaves de un glob: "{.env,*.py}" -> [".env", "*.py"]."""
+    m = re.search(r"\{([^{}]*)\}", glob)
+    if not m:
+        return [glob]
+    return [x for alt in m.group(1).split(",")
+            for x in _alternativas(glob[:m.start()] + alt + glob[m.end():])]
+
+
+def _glob_nombra_env(glob):
+    """True si alguna alternativa del glob apunta al .env por su nombre (".env", ".env*", "**/.env").
+    Un glob genérico como "*" no cuenta: no nombra el fichero."""
+    for alt in _alternativas(glob or ""):
+        if alt.startswith("!"):   # exclusión: deja el .env fuera
+            continue
+        nombre = alt.split("/")[-1]
+        if nombre.startswith(".") and fnmatch.fnmatchcase(FICHERO_SECRETOS, nombre):
+            return True
+    return False
+
+
 def toca_env(herramienta, entrada):
-    """Descripción de la llamada si nombra el .env; None si no."""
+    """Descripción de la llamada si puede traer el contenido del .env; None si no.
+
+    Glob no cuenta: solo devuelve rutas, como un find, y saber que el .env existe no es leerlo.
+    Grep sí: devuelve líneas, así que cuenta si su path es el .env o su glob lo nombra.
+    """
     entrada = entrada or {}
     if herramienta in ("Read", "Edit", "Write", "NotebookEdit"):
         ruta = entrada.get("file_path") or entrada.get("notebook_path") or ""
         return "%s %s" % (herramienta, ruta) if Path(ruta).name == FICHERO_SECRETOS else None
-    if herramienta in ("Grep", "Glob"):
-        ruta = entrada.get("path") or ""
-        if Path(ruta).name == FICHERO_SECRETOS or entrada.get("pattern") == FICHERO_SECRETOS:
-            return "%s %s" % (herramienta, ruta or entrada.get("pattern"))
+    if herramienta == "Grep":
+        ruta, glob = entrada.get("path") or "", entrada.get("glob") or ""
+        if Path(ruta).name == FICHERO_SECRETOS or _glob_nombra_env(glob):
+            return "Grep %s%s" % (entrada.get("pattern", ""), " en " + (ruta or glob))
         return None
     if herramienta == "Bash":
         comando = entrada.get("command", "")
@@ -293,9 +325,17 @@ def _en(proyecto, referencia, rel):
     return _git(proyecto, "show", "%s:%s" % (referencia, rel))
 
 
-def revisar_estado(proyecto, referencia="HEAD"):
+def activo(proyecto):
+    """True si el repo activa los hooks del equipo con el fichero marcador en su raíz."""
+    return (Path(proyecto) / MARCADOR).is_file()
+
+
+def revisar_estado(proyecto, referencia="HEAD", comprobar_imports=True):
     """R1 y R4 sobre lo que ha cambiado respecto a `referencia` (el commit de inicio de la sesión),
     venga de donde venga el cambio y esté commiteado o no.
+
+    `comprobar_imports=False` salta la parte de R4 que mira los imports: hace falta el Python del .venv
+    del proyecto para saber qué es biblioteca estándar y qué arrastra requirements.txt.
 
     Devuelve una lista de (regla, fichero, línea, motivo, fragmento).
     """
@@ -311,6 +351,8 @@ def revisar_estado(proyecto, referencia="HEAD"):
         if r1_aplica(rel):
             for linea, motivo, texto in accesos_nuevos(base, final):
                 hallazgos.append(("R1", rel, linea, motivo, texto))
+        if not comprobar_imports:
+            continue
         if permitidos is None:
             requisitos = _en(proyecto, referencia, REQUISITOS) or ""
             permitidos = cierre_requisitos(requisitos)[1] | modulos_locales(proyecto)
@@ -333,7 +375,12 @@ COMO_ARREGLAR = {
 
 def main():
     orden = sys.argv[1] if len(sys.argv) > 1 else ""
+    proyecto = os.environ.get("CLAUDE_PROJECT_DIR") or "."
+    if orden == "activo":
+        sys.exit(0 if activo(proyecto) else 1)
     entrada = json.load(sys.stdin)
+    if not activo(os.environ.get("CLAUDE_PROJECT_DIR") or entrada.get("cwd") or "."):
+        sys.exit(0 if orden == "apuntar-inicio" else 1)   # repo sin marcador: no se hace nada
     if orden == "apuntar-inicio":
         apuntar_inicio(os.environ.get("CLAUDE_PROJECT_DIR") or entrada.get("cwd") or ".", entrada.get("session_id"))
         sys.exit(0)

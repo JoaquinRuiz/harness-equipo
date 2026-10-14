@@ -3,6 +3,9 @@
 # final rompa una regla. Exit 2 = Claude sigue trabajando con este mensaje.
 cd "${CLAUDE_PROJECT_DIR:-.}" || exit 0
 entrada=$(cat)  # comprobar_reglas.py la necesita para saber en qué commit empezó la sesión
+py=.venv/bin/python
+[ -x "$py" ] || py=python3
+"$py" "$(dirname -- "$0")/reglas.py" activo || exit 0   # repo sin el marcador .harness-equipo
 if [ ! -x .venv/bin/python ]; then
   cat >&2 <<MSG
 [harness-equipo · puerta_de_salida] No encuentro .venv/bin/python en $PWD.

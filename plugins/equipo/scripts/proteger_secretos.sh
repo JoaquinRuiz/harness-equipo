@@ -1,7 +1,8 @@
 #!/bin/bash
-# PreToolUse Read|Edit|Write|Bash · R5: el .env ni se lee ni se edita (el .env.example sí).
+# PreToolUse Read|Edit|Write|Bash|Grep · R5: el .env ni se lee ni se edita (el .env.example sí).
 # Quien decide es reglas.py: la misma expresión que usa el auditor. Un comando que recorre
-# el .env sin nombrarlo (grep -r) no se puede ver aquí; eso lo detecta el auditor.
+# el .env sin nombrarlo (grep -r) no se puede ver aquí; eso lo detecta el auditor. Glob no se vigila:
+# solo devuelve rutas.
 py="${CLAUDE_PROJECT_DIR:-.}/.venv/bin/python"
 [ -x "$py" ] || py=python3
 if que=$("$py" "$(dirname -- "$0")/reglas.py" toca-env); then

@@ -21,7 +21,10 @@ if VENV.exists() and Path(sys.prefix).resolve() != VENV.parent.parent.resolve():
 
 sys.dont_write_bytecode = True  # no dejar __pycache__ junto a los scripts del plugin
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from reglas import COMO_ARREGLAR, commit_de_inicio, revisar_estado  # noqa: E402
+from reglas import COMO_ARREGLAR, activo, commit_de_inicio, revisar_estado  # noqa: E402
+
+if not activo(PROYECTO):
+    sys.exit(0)  # repo sin el marcador .harness-equipo: el equipo no ha activado los hooks aquí
 
 # De la entrada del hook solo hace falta la sesión: manda el estado, no la herramienta.
 try:
@@ -30,7 +33,11 @@ except ValueError:
     sesion = None
 etiqueta = sys.argv[2] if sys.argv[1:2] == ["--etiqueta"] else "comprobar_reglas"
 
-hallazgos = revisar_estado(PROYECTO, commit_de_inicio(PROYECTO, sesion))
+# Los imports de R4 solo se comprueban con el Python del .venv del proyecto: sin él no se sabe qué es
+# biblioteca estándar ni qué arrastra requirements.txt, y se avisaría en falso. La falta del .venv la
+# señala la puerta de salida.
+con_venv = Path(sys.prefix).resolve() == VENV.parent.parent.resolve() and hasattr(sys, "stdlib_module_names")
+hallazgos = revisar_estado(PROYECTO, commit_de_inicio(PROYECTO, sesion), comprobar_imports=con_venv)
 if not hallazgos:
     sys.exit(0)
 
