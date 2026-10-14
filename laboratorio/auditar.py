@@ -477,7 +477,7 @@ def auditar(ws, transcript=None, sesion=None):
     commit = commit_inicial(ws)
     en_base = ficheros_base(commit)
     en_ws = ficheros_workspace(ws)
-    nuevos = sorted(en_ws - en_base - {".env"})
+    nuevos = sorted(en_ws - en_base - {".env", ".harness-equipo"})  # el marcador lo pone el laboratorio
     borrados = sorted(en_base - en_ws)
     modificados = sorted(r for r in en_ws & en_base
                          if (ws / r).read_bytes().decode("utf-8", "replace") != leer_base(commit, r))

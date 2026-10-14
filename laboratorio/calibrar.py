@@ -339,6 +339,24 @@ def main():
                 if not ok_puerta:
                     print("      puerta (exit %s): %s" % (codigo_stop, salida_stop[:600]))
 
+        print("\n== Montaje de las condiciones (toma.montar, el que usan correr.py, prueba_hooks.py y directo.py)")
+        import correr
+        import toma
+        if toma.MARCADOR != reglas.MARCADOR:
+            fallos += 1
+            print("MAL  toma.MARCADOR (%s) distinto de reglas.MARCADOR (%s)" % (toma.MARCADOR, reglas.MARCADOR))
+        for cond in "ABCD":
+            commit, con_plugin, con_agents = correr.CONDICIONES[cond]
+            ws = Path(tmp) / ("condicion-" + cond)
+            toma.montar(ws, commit, con_plugin)
+            tiene = {"marcador": (ws / reglas.MARCADOR).exists(), "AGENTS.md": (ws / "AGENTS.md").exists(),
+                     ".claude": (ws / ".claude").exists()}
+            esperado = {"marcador": con_plugin, "AGENTS.md": con_agents, ".claude": False}
+            ok = tiene == esperado
+            fallos += 0 if ok else 1
+            print("%s  condición %s: %s" % ("OK " if ok else "MAL", cond,
+                                            ", ".join("%s %s" % (k, "sí" if v else "no") for k, v in tiene.items())))
+
         print("\n== Hooks de entrada (PreToolUse)")
         for script, herramienta, plantilla_input, bloquea in ENTRADA:
             ws = sin_marcador if plantilla_input.get("_sin_marcador") else plantilla
@@ -353,8 +371,8 @@ def main():
                                                  "bloquea" if codigo == 2 else "deja pasar (exit %d)" % codigo))
             if not ok:
                 print("      " + salida[:400])
-    total = len(CASOS) + len(ENTRADA)
-    print("\n%d casos (%d de estado + %d de entrada), %d fallos" % (total, len(CASOS), len(ENTRADA), fallos))
+    total = len(CASOS) + len(ENTRADA) + 5
+    print("\n%d casos (%d de estado + 5 de montaje + %d de entrada), %d fallos" % (total, len(CASOS), len(ENTRADA), fallos))
     sys.exit(1 if fallos else 0)
 
 

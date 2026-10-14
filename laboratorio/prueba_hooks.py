@@ -123,7 +123,7 @@ def main():
         prompt, rotura, con_plugin = PRUEBAS[prueba]
         ws = toma.TMP / "prueba_hooks" / prueba
         salida = toma.LAB / "prueba_hooks" / prueba
-        toma.preparar_workspace(ws, toma.COMMIT_BASE)
+        toma.montar(ws, toma.COMMIT_BASE, con_plugin)
         if rotura:
             fichero, viejo, nuevo = rotura
             p = ws / fichero

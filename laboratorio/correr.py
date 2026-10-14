@@ -125,7 +125,7 @@ def correr_toma(tanda, nombre_ticket, cond, rep, args):
         salida.rename(salida.with_name(salida.name + ".error%d" % k))
     commit, con_plugin, _ = CONDICIONES[cond]
     ws = toma.TMP / tanda / salida.name
-    toma.preparar_workspace(ws, commit)
+    toma.montar(ws, commit, con_plugin)
     print("== %s: lanzando…" % salida.name, flush=True)
     modelo, esfuerzo = MODELOS[args.modelo]
     ejecucion = toma.lanzar(ws, ticket(nombre_ticket), salida, con_plugin=con_plugin,

@@ -26,7 +26,7 @@ def main():
     cond, nombre = sys.argv[1], sys.argv[2]
     commit, con_plugin, _ = correr.CONDICIONES[cond]
     ws = toma.TMP / "directo" / ("%s-%s" % (nombre, cond))
-    toma.preparar_workspace(ws, commit)
+    toma.montar(ws, commit, con_plugin)
     binario = toma.claude_bin()
     env, aislado = toma.entorno_aislado(ws, binario)
     env["TERM"] = os.environ.get("TERM", "xterm-256color")

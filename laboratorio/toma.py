@@ -77,6 +77,19 @@ def preparar_workspace(destino, commit):
     poblar_workspace(destino, commit)
 
 
+MARCADOR = ".harness-equipo"   # el mismo nombre que reglas.MARCADOR (lo comprueba calibrar.py)
+
+
+def montar(destino, commit, con_plugin):
+    """Workspace de una condición: TaskFlow en `commit` y, si la condición lleva el plugin, el marcador que
+    activa sus hooks desde v0.3.1. Los commits del laboratorio no lo traen: sin él, una reproducción de C con
+    v0.3.1 mediría B más la skill con los hooks apagados. Sin plugin (A, B) no se pone: no hace nada y el
+    workspace queda igual que en las tomas medidas."""
+    preparar_workspace(destino, commit)
+    if con_plugin and not (destino / MARCADOR).exists():
+        (destino / MARCADOR).write_text("# Activa los hooks del plugin equipo (lo pone el laboratorio en C y D).\n")
+
+
 def poblar_workspace(destino, commit):
     """TaskFlow en `commit` dentro de `destino` (vacío o no; lo usa también el scaffold de los evals)."""
     destino.mkdir(parents=True, exist_ok=True)

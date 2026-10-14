@@ -26,7 +26,7 @@ LAB_PUBLICO = [
     "auditar.py", "calibrar.py", "correr.py", "toma.py", "prueba_hooks.py", "reglas_escritas.py",
     "analisis_coste.py", "resumen_tanda.py", "reauditar.py", "ver_toma.py", "directo.py",
     "demo_commit.sh", "distribucion.sh", "revisar_publicacion.py", "rutas.py", "auditar_eval.py",
-    "construir_wheelhouse.sh", "env.pega", "distribucion_proyecto.sh",
+    "construir_wheelhouse.sh", "env.pega", "distribucion_proyecto.sh", "primera_apertura.sh",
     "reglas.md", "sandbox.json", "aislamiento.json", "resultados.md", "analisis_pasada1.md",
     "grabaciones.md", "distribucion_proyecto.md", "tickets", "eval/casos", "eval/preparar.sh",
     "eval/scaffold_taskflow.sh",

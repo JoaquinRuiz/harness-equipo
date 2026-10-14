@@ -466,7 +466,7 @@ viajan con el plugin. El marcador se cuenta desde v0.3.1 porque forma parte de c
   `distribucion.sh` funcionan (relanzan con Python 3.14).
 
 ## Calibración del auditor y de los hooks
-`lab/calibrar.py`, harness v0.3.1: 75 casos (40 de estado y 35 de entrada), 0 fallos. Nuevos en v0.3.1: repo sin
+`lab/calibrar.py`, harness v0.3.1: 80 casos (40 de estado, 5 de montaje de las condiciones y 35 de entrada), 0 fallos. Montaje: con `toma.montar`, el mismo que usan `correr.py`, `prueba_hooks.py` y `directo.py`, C y D llevan el marcador `.harness-equipo` (sin él, una reproducción de C con v0.3.1 mediría B más la skill con los hooks apagados) y A y B no; ninguna lleva `.claude/`; y `toma.MARCADOR` coincide con `reglas.MARCADOR`. Nuevos en v0.3.1: repo sin
 marcador con R1 rota (ningún hook actúa; el auditor sí la ve), repo con marcador y sin `.venv` con un `import
 json` (sin R4 en falso; la puerta pide el entorno), Grep con `path` `.env`, con `glob` `{.env,*.py}` y `.env*`
 (bloqueados), Grep con `*.py` y `{.env.example,*.md}` y Glob con `.env*` y `**/{.env*,*.toml}` (permitidos), y
