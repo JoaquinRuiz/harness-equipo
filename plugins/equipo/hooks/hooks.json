@@ -1,6 +1,13 @@
 {
-  "description": "Reglas de la casa de TaskFlow: entrada (secretos y dependencias), aviso tras cada cambio y puerta de salida",
+  "description": "Reglas de la casa de TaskFlow: inicio de sesión, entrada (secretos y dependencias), aviso tras cada cambio y puerta de salida",
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/scripts/inicio_de_sesion.sh", "args": [] }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Read|Edit|Write|Bash",

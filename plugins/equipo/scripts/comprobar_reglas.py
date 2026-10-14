@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """PostToolUse Edit|Write|Bash · R1 y R4 sobre el estado del proyecto tras cada cambio.
 
-No mira qué herramienta se usó: revisa lo que git ve distinto de HEAD (sea de un Edit, de
-un Write o de un sed en Bash) y avisa (exit 2) con fichero, línea y cómo arreglarlo.
+No mira qué herramienta se usó: revisa lo que git ve distinto del commit en el que empezó la
+sesión (lo apunta inicio_de_sesion.sh; si falta, HEAD), esté commiteado o no y venga de un Edit,
+de un Write o de un sed en Bash. Avisa (exit 2) con fichero, línea y cómo arreglarlo.
 puerta_de_salida.sh lo vuelve a llamar al terminar, con --etiqueta puerta_de_salida.
 """
+import json
 import os
 import sys
 from pathlib import Path
@@ -19,13 +21,16 @@ if VENV.exists() and Path(sys.prefix).resolve() != VENV.parent.parent.resolve():
 
 sys.dont_write_bytecode = True  # no dejar __pycache__ junto a los scripts del plugin
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from reglas import COMO_ARREGLAR, revisar_estado  # noqa: E402
+from reglas import COMO_ARREGLAR, commit_de_inicio, revisar_estado  # noqa: E402
 
-if not sys.stdin.isatty():
-    sys.stdin.read()  # la entrada del hook no hace falta: manda el estado, no la herramienta
+# De la entrada del hook solo hace falta la sesión: manda el estado, no la herramienta.
+try:
+    sesion = json.loads(sys.stdin.read() or "{}").get("session_id")
+except ValueError:
+    sesion = None
 etiqueta = sys.argv[2] if sys.argv[1:2] == ["--etiqueta"] else "comprobar_reglas"
 
-hallazgos = revisar_estado(PROYECTO)
+hallazgos = revisar_estado(PROYECTO, commit_de_inicio(PROYECTO, sesion))
 if not hallazgos:
     sys.exit(0)
 

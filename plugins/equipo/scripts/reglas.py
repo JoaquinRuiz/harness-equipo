@@ -8,10 +8,12 @@ escritas (AGENTS.md y la skill). Compatible con Python 3.9+.
 Uso desde un hook (lee la entrada JSON del hook por stdin):
   reglas.py toca-env          # exit 0 e imprime qué toca si la llamada nombra el .env
   reglas.py es-dependencias   # exit 0 e imprime la ruta si edita un fichero de dependencias
+  reglas.py apuntar-inicio    # SessionStart: apunta en .git el commit en el que empieza la sesión
 """
 import ast
 import fnmatch
 import json
+import os
 import re
 import subprocess
 import sys
@@ -238,53 +240,79 @@ def toca_env(herramienta, entrada):
     return None
 
 
-# --- Estado del proyecto (hooks PostToolUse y Stop) -----------------------------
+# --- Estado del proyecto (hooks SessionStart, PostToolUse y Stop) ---------------
 
-def cambios_git(proyecto):
-    """Rutas (relativas, con /) que git ve distintas de HEAD: modificadas, nuevas,
-    borradas o renombradas. Lo ignorado por .gitignore no cuenta."""
-    r = subprocess.run(["git", "status", "--porcelain=v1", "-z", "-uall"], cwd=str(proyecto),
-                       capture_output=True, text=True)
-    if r.returncode != 0:
-        return []
-    rutas, partes, i = [], r.stdout.split("\0"), 0
-    while i < len(partes):
-        entrada = partes[i]
-        i += 1
-        if len(entrada) < 4:
-            continue
-        estado, ruta = entrada[:2], entrada[3:]
-        rutas.append(ruta)
-        if "R" in estado or "C" in estado:   # en -z, el origen del renombrado va detrás
-            rutas.append(partes[i])
-            i += 1
-    return rutas
-
-
-def _en_head(proyecto, rel):
-    r = subprocess.run(["git", "show", "HEAD:" + rel], cwd=str(proyecto), capture_output=True, text=True)
+def _git(proyecto, *args):
+    r = subprocess.run(["git"] + list(args), cwd=str(proyecto), capture_output=True, text=True)
     return r.stdout if r.returncode == 0 else None
 
 
-def revisar_estado(proyecto):
-    """R1 y R4 sobre lo que ha cambiado respecto a HEAD, venga de donde venga el cambio.
+def _fichero_inicio(proyecto, sesion):
+    """Dónde se apunta el commit de inicio de una sesión: dentro de .git, fuera del árbol de trabajo."""
+    ruta = _git(proyecto, "rev-parse", "--git-path", "harness-equipo/inicio-de-sesion")
+    if not ruta or not sesion:
+        return None
+    nombre = re.sub(r"[^\w.-]", "_", str(sesion))
+    return Path(proyecto) / ruta.strip() / nombre
+
+
+def apuntar_inicio(proyecto, sesion):
+    """SessionStart: apunta el commit en el que empieza la sesión (si ya estaba apuntado, se respeta)."""
+    fichero = _fichero_inicio(proyecto, sesion)
+    head = _git(proyecto, "rev-parse", "HEAD")
+    if fichero is None or head is None or fichero.exists():
+        return
+    fichero.parent.mkdir(parents=True, exist_ok=True)
+    fichero.write_text(head.strip() + "\n")
+
+
+def commit_de_inicio(proyecto, sesion):
+    """Commit con el que se compara: el apuntado al empezar la sesión o, si falta, HEAD.
+
+    Comparar con HEAD a secas dejaba ciego al hook ante cualquier cosa que el agente hubiera commiteado.
+    """
+    fichero = _fichero_inicio(proyecto, sesion)
+    if fichero is not None and fichero.exists():
+        commit = fichero.read_text().strip()
+        if _git(proyecto, "cat-file", "-e", commit + "^{commit}") is not None:
+            return commit
+    return "HEAD"
+
+
+def cambios_git(proyecto, referencia="HEAD"):
+    """Rutas (relativas, con /) distintas de `referencia`, commiteadas o no: modificadas, nuevas,
+    borradas o renombradas, más las nuevas sin seguimiento. Lo ignorado por .gitignore no cuenta."""
+    salida = _git(proyecto, "diff", "--name-only", "--no-renames", "-z", referencia)
+    nuevas = _git(proyecto, "ls-files", "--others", "--exclude-standard", "-z")
+    if salida is None or nuevas is None:
+        return []
+    return sorted({r for r in (salida + nuevas).split("\0") if r})
+
+
+def _en(proyecto, referencia, rel):
+    return _git(proyecto, "show", "%s:%s" % (referencia, rel))
+
+
+def revisar_estado(proyecto, referencia="HEAD"):
+    """R1 y R4 sobre lo que ha cambiado respecto a `referencia` (el commit de inicio de la sesión),
+    venga de donde venga el cambio y esté commiteado o no.
 
     Devuelve una lista de (regla, fichero, línea, motivo, fragmento).
     """
     proyecto = Path(proyecto)
     hallazgos, permitidos = [], None
-    for rel in cambios_git(proyecto):
+    for rel in cambios_git(proyecto, referencia):
         ruta = proyecto / rel
         if es_fichero_dependencias(rel):
-            hallazgos.append(("R4", rel, 0, "fichero de dependencias distinto de HEAD", ""))
+            hallazgos.append(("R4", rel, 0, "fichero de dependencias distinto del inicio de la sesión", ""))
         if not rel.endswith(".py") or not ruta.is_file():
             continue
-        base, final = _en_head(proyecto, rel), ruta.read_text(errors="replace")
+        base, final = _en(proyecto, referencia, rel), ruta.read_text(errors="replace")
         if r1_aplica(rel):
             for linea, motivo, texto in accesos_nuevos(base, final):
                 hallazgos.append(("R1", rel, linea, motivo, texto))
         if permitidos is None:
-            requisitos = _en_head(proyecto, REQUISITOS) or ""
+            requisitos = _en(proyecto, referencia, REQUISITOS) or ""
             permitidos = cierre_requisitos(requisitos)[1] | modulos_locales(proyecto)
         for linea, modulo in imports_no_aprobados(base, final, permitidos):
             hallazgos.append(("R4", rel, linea, "import de un paquete que no está en " + REQUISITOS, modulo))
@@ -297,7 +325,7 @@ COMO_ARREGLAR = {
           "     y llama a ese método. Fuera de la capa de datos no se importa db, sqlalchemy ni\n"
           "     sqlite3, ni se usa .session, .query o .execute.",
     "R4": "R4 · No se añaden dependencias sin aprobación del equipo. Deja los ficheros de\n"
-          "     dependencias como en HEAD (git checkout -- <fichero>, o bórralo si es nuevo), quita\n"
+          "     dependencias como al empezar (git checkout <commit> -- <fichero>, o bórralo si es nuevo), quita\n"
           "     el import y resuélvelo con la biblioteca estándar; si de verdad hace falta, deja la\n"
           "     propuesta en el resumen para que alguien la apruebe.",
 }
@@ -306,6 +334,9 @@ COMO_ARREGLAR = {
 def main():
     orden = sys.argv[1] if len(sys.argv) > 1 else ""
     entrada = json.load(sys.stdin)
+    if orden == "apuntar-inicio":
+        apuntar_inicio(os.environ.get("CLAUDE_PROJECT_DIR") or entrada.get("cwd") or ".", entrada.get("session_id"))
+        sys.exit(0)
     herramienta, datos = entrada.get("tool_name"), entrada.get("tool_input") or {}
     if orden == "toca-env":
         que = toca_env(herramienta, datos)

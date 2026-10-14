@@ -2,7 +2,7 @@
 # Stop · R6, R1 y R4: no se da la tarea por cerrada mientras la suite falle o el estado
 # final rompa una regla. Exit 2 = Claude sigue trabajando con este mensaje.
 cd "${CLAUDE_PROJECT_DIR:-.}" || exit 0
-cat > /dev/null  # entrada del hook: no hace falta
+entrada=$(cat)  # comprobar_reglas.py la necesita para saber en qué commit empezó la sesión
 if [ ! -x .venv/bin/python ]; then
   cat >&2 <<MSG
 [harness-equipo · puerta_de_salida] No encuentro .venv/bin/python en $PWD.
@@ -22,6 +22,6 @@ if [ $? -ne 0 ]; then
   } >&2
   bloquear=1
 fi
-"$(dirname -- "$0")/comprobar_reglas.py" --etiqueta puerta_de_salida < /dev/null || bloquear=1
+printf '%s' "$entrada" | "$(dirname -- "$0")/comprobar_reglas.py" --etiqueta puerta_de_salida || bloquear=1
 [ "$bloquear" -eq 0 ] || exit 2
 exit 0
