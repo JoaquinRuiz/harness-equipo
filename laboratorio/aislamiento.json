@@ -1,0 +1,32 @@
+{
+  "_nota": "Lo que trae Claude Code 2.1.294 de serie con un CLAUDE_CONFIG_DIR vacío (init de prueba_hooks/_sandbox_sin_permisos). Cualquier skill o plugin fuera de esta lista, salvo equipo, es contaminación.",
+  "claude_code_version": "2.1.294",
+  "skills_de_serie": [
+    "deep-research",
+    "design",
+    "design-sync",
+    "dataviz",
+    "update-config",
+    "verify",
+    "debug",
+    "code-review",
+    "simplify",
+    "batch",
+    "fewer-permission-prompts",
+    "doctor",
+    "loop",
+    "schedule",
+    "claude-api",
+    "workflow-authoring",
+    "run",
+    "run-skill-generator",
+    "plugin-authoring"
+  ],
+  "plugins_de_serie": [
+    "cc-plugin-agents-md",
+    "cc-plugin-telemetry",
+    "cc-plugin-plugin-authoring"
+  ],
+  "frase_agents_md": "API REST de gestión de tareas: usuarios, proyectos, tareas y etiquetas.",
+  "_nota_frase": "Se busca en el contexto inyectado (adjuntos y snapshot del prompt), no en resultados de herramientas: que el agente lea el fichero con Read no cuenta como carga."
+}

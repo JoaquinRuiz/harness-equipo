@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: canario-agents-md
+description: ¿Carga claude plugin eval el AGENTS.md del workspace? El scaffold prepara TaskFlow con su AGENTS.md y le añade una palabra clave; el agente responde sin herramientas.
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    Sin usar ninguna herramienta: ¿cuál es la palabra clave de este proyecto según sus instrucciones?
+    Si no tienes ninguna instrucción del proyecto en tu contexto, responde exactamente NINGUNA.
+  model: claude-sonnet-5-5
+  max_turns: 4
+  timeout_seconds: 300
+  allowed_tools: []
+graders:
+  - type: regex
+    name: el AGENTS.md del workspace llega al contexto
+    target: last_message
+    pattern: ARCOIRIS-7731

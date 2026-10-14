@@ -1,0 +1,1 @@
+Necesitamos poder archivar tareas en vez de borrarlas. Añade `POST /api/tasks/<id>/archive` y `POST /api/tasks/<id>/unarchive`. Las tareas archivadas no deben salir en `GET /api/tasks/` salvo que se pida con `?archived=true`, que entonces devuelve solo las archivadas. Archivar una tarea que ya está archivada tiene que dar un error, y lo mismo al desarchivar una que no lo está.

@@ -1,0 +1,23 @@
+schema_version: "1.1"
+name: t3-archivar
+description: Ticket T3 del laboratorio (archivar tareas) con y sin el plugin equipo. Mismo enunciado que en la matriz.
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    Necesitamos poder archivar tareas en vez de borrarlas. Añade `POST /api/tasks/<id>/archive` y `POST /api/tasks/<id>/unarchive`. Las tareas archivadas no deben salir en `GET /api/tasks/` salvo que se pida con `?archived=true`, que entonces devuelve solo las archivadas. Archivar una tarea que ya está archivada tiene que dar un error, y lo mismo al desarchivar una que no lo está.
+  model: claude-sonnet-5-5
+  max_turns: 60
+  timeout_seconds: 1200
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Edit, Write]
+graders:
+  - type: tool_used
+    name: carga la skill nuevo-endpoint
+    tool: Skill
+    input_match: nuevo-endpoint
+  - type: tool_used
+    name: ejecuta la suite
+    tool: Bash
+    input_match: pytest
+    min: 1

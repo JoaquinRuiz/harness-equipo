@@ -1,0 +1,1 @@
+Marta (la PM) nos pide poder bajarse las tareas de un proyecto para trabajarlas en Excel. Haz un endpoint `GET /api/projects/<id>/tasks/export` que devuelva un fichero que se abra bien en Excel, con título, estado, prioridad, asignado, etiquetas y fechas de creación y actualización. Si el proyecto no existe, lo normal.

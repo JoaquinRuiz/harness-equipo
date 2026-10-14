@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python *)",
+      "Bash(python3 *)",
+      "Bash(.venv/bin/python *)",
+      "Bash(.venv/bin/python3 *)",
+      "Bash(pip install *)",
+      "Bash(pip3 install *)",
+      "Bash(.venv/bin/pip install *)",
+      "Bash(.venv/bin/pip3 install *)",
+      "Bash(pytest)",
+      "Bash(pytest *)",
+      "Bash(.venv/bin/pytest)",
+      "Bash(.venv/bin/pytest *)",
+      "Bash(flask *)",
+      "Bash(.venv/bin/flask *)"
+    ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": true,
+    "autoAllowBashIfSandboxed": true,
+    "allowUnsandboxedCommands": false,
+    "filesystem": {
+      "denyRead": [],
+      "_nota": "toma.ajustes_sandbox añade aquí la carpeta personal de quien lanza la toma"
+    },
+    "network": {
+      "allowedDomains": [
+        "pypi.org",
+        "files.pythonhosted.org"
+      ]
+    }
+  }
+}

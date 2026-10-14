@@ -1,0 +1,1 @@
+Para las dailies queremos ver de un vistazo la carga de cada persona. ¿Me haces `GET /api/users/<id>/workload`? Tiene que devolver cuántas tareas abiertas (no `done`) tiene asignadas en total, desglosadas por proyecto (id y nombre) y por prioridad. Si el usuario no existe, un 404 como en el resto.
