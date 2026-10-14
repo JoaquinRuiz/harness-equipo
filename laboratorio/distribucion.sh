@@ -14,7 +14,8 @@ mkdir -p "$limpio/home" "$limpio/config"
 claude_bin=$(readlink -f "$(command -v claude)")
 run() { env -i PATH="/usr/bin:/bin" HOME="$limpio/home" CLAUDE_CONFIG_DIR="$limpio/config" LANG=es_ES.UTF-8 "$claude_bin" "$@"; }
 
-echo "Configuración vacía en $limpio · origen: $origen · harness $(git -C "$origen" describe --tags 2>/dev/null || echo '?')"
+if [ -d "$origen" ]; then version="$(git -C "$origen" describe --tags 2>/dev/null)"; else version="la del repo en GitHub"; fi
+echo "Configuración vacía en $limpio · origen: $origen · harness $version"
 inicio=$(python3 -c 'import time; print(time.time())')
 echo; echo '$ claude plugin marketplace add '"$origen"; run plugin marketplace add "$origen"
 echo; echo '$ claude plugin install equipo@harness-equipo'; run plugin install equipo@harness-equipo

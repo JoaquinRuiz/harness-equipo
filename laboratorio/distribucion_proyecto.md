@@ -1,13 +1,23 @@
 # Distribución por proyecto (Fase 6)
 
-Para que cualquiera que abra TaskFlow con Claude Code reciba el harness, el repo lleva un
-`.claude/settings.json` que declara el marketplace del equipo y activa el plugin:
+Comprobado el 2026-10-14 con `lab/distribucion_proyecto.sh` (configuración vacía, TaskFlow y harness-equipo
+desde GitHub, sin modelo): dentro del clon de TaskFlow,
+
+```
+claude plugin marketplace add JoaquinRuiz/harness-equipo --scope project
+claude plugin install equipo@harness-equipo --scope project
+```
+
+escriben este `.claude/settings.json` en la raíz del proyecto:
 
 ```json
 {
   "extraKnownMarketplaces": {
     "harness-equipo": {
-      "source": { "source": "github", "repo": "<usuario>/harness-equipo" }
+      "source": {
+        "source": "github",
+        "repo": "JoaquinRuiz/harness-equipo"
+      }
     }
   },
   "enabledPlugins": {
@@ -16,9 +26,9 @@ Para que cualquiera que abra TaskFlow con Claude Code reciba el harness, el repo
 }
 ```
 
-- Al abrir el proyecto y confiar en la carpeta, Claude Code ofrece instalar el marketplace y el plugin.
-- `<usuario>/harness-equipo` queda pendiente de publicar el repo (no se publica nada con gh mientras esté la
-  cuenta de trabajo). Para probarlo en local, la fuente puede ser `{ "source": "directory", "path": "<ruta>" }`.
-- No se añade a la rama `main` de TaskFlow: `main` es la base de las tomas de la matriz.
-- Alternativa por línea de comandos, ya dentro del proyecto:
-  `claude plugin install equipo@harness-equipo --scope project`.
+- `claude plugin list` dentro de TaskFlow: `equipo@harness-equipo` 0.3.1, alcance de proyecto, **activado**; en
+  otro directorio: el mismo plugin, **desactivado**.
+- `git status` lo muestra como `?? .claude/`: es el fichero que el equipo commitea para que cualquiera que abra
+  el proyecto con Claude Code reciba el marketplace y el plugin. Junto con `.harness-equipo` (que activa los
+  hooks), es todo lo que el repo necesita.
+- Tiempo de `marketplace add` + `install` con alcance de proyecto en la prueba: 3,1 s (D14, alcance de usuario: 3,3 s).

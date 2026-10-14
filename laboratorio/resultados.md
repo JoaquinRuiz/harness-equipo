@@ -48,7 +48,7 @@ Criterios de la medición:
 | D12 | Violación más clara de B (fichero:línea) | PENDIENTE |
 | D12b | Toma equivalente en C | PENDIENTE |
 | D13 | Δ del eval y concordancia con el auditor | P1: con plugin 1,00, sin plugin 0,33, **Δ +0,67** (3 runs por brazo); T3: 1,00 y 1,00, Δ 0,00 (1 run por brazo). Auditor y graders coinciden en las 8 tomas (R5, fuga y suite). Ver «claude plugin eval» |
-| D14 | Tiempo de instalación desde cero | PENDIENTE: medida oficial desde GitHub (`lab/distribucion.sh JoaquinRuiz/harness-equipo`) cuando el repo sea público. La prueba en seco desde el directorio local (1,3 s) no cuenta |
+| D14 | Tiempo de instalación desde cero | **3,3 s** (2026-10-14, `lab/distribucion.sh JoaquinRuiz/harness-equipo`: `marketplace add` con clon por HTTPS + `install`, configuración vacía, v0.3.1). Las pruebas en seco desde el directorio local (1,3 y 1,0 s) no cuentan |
 | D15 | Bonus OpenCode | Fuera de este vídeo (pasa a uno aparte) |
 | D15a | Bonus OpenCode | Fuera de este vídeo (pasa a uno aparte) |
 | D16 | Coste total | PENDIENTE |

@@ -88,6 +88,12 @@ def poblar_workspace(destino, commit):
     else:
         subprocess.run(["git", "clone", "-q", str(TASKFLOW), str(destino)], check=True)
     subprocess.run(["git", "-C", str(destino), "checkout", "-q", "-B", "main", commit], check=True)
+    # Ninguna configuración de Claude Code del proyecto: un .claude/settings.json (como el que trae la cabeza
+    # de TaskFlow para el equipo) activaría el plugin en A o B y contaminaría la condición.
+    shutil.rmtree(destino / ".claude", ignore_errors=True)
+    for nombre in ("CLAUDE.md", "CLAUDE.local.md"):
+        if (destino / nombre).exists():
+            raise SystemExit("%s en el commit %s: el laboratorio no lo espera" % (nombre, commit))
     # Identidad neutra para los commits que haga el agente (sin ella, git usa el usuario y el nombre
     # de la máquina, que acabarían en los transcripts).
     for clave, valor in (("user.name", "Agente del laboratorio"), ("user.email", "agente@laboratorio.invalid")):
