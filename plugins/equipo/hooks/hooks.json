@@ -1,9 +1,9 @@
 {
-  "description": "Reglas de la casa de TaskFlow: secretos, dependencias, capas y suite en verde",
+  "description": "Reglas de la casa de TaskFlow: entrada (secretos y dependencias), aviso tras cada cambio y puerta de salida",
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Read|Edit|Write",
+        "matcher": "Read|Edit|Write|Bash",
         "hooks": [
           { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/scripts/proteger_secretos.sh", "args": [] }
         ]
@@ -17,16 +17,16 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Edit|Write",
+        "matcher": "Edit|Write|Bash",
         "hooks": [
-          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/scripts/comprobar_capas.py", "args": [] }
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/scripts/comprobar_reglas.py", "args": [] }
         ]
       }
     ],
     "Stop": [
       {
         "hooks": [
-          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/scripts/suite_en_verde.sh", "args": [], "timeout": 300 }
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/scripts/puerta_de_salida.sh", "args": [], "timeout": 300 }
         ]
       }
     ]

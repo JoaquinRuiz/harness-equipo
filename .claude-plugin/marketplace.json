@@ -6,7 +6,7 @@
     {
       "name": "equipo",
       "source": "./plugins/equipo",
-      "description": "Reglas de la casa de TaskFlow: receta de nuevo endpoint y hooks que protegen secretos, dependencias, capas y suite en verde"
+      "description": "Reglas de la casa de TaskFlow: receta de nuevo endpoint y hooks que vigilan resultados (secretos y dependencias a la entrada, aviso tras cada cambio y puerta de salida)"
     }
   ]
 }

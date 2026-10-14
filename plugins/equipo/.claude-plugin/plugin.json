@@ -1,6 +1,6 @@
 {
   "name": "equipo",
-  "version": "0.1.0",
-  "description": "Reglas de la casa de TaskFlow: receta de nuevo endpoint y hooks que protegen secretos, dependencias, capas y suite en verde",
+  "version": "0.2.0",
+  "description": "Reglas de la casa de TaskFlow: receta de nuevo endpoint y hooks que vigilan resultados (secretos y dependencias a la entrada, aviso tras cada cambio y puerta de salida)",
   "author": { "name": "JoaquinRuiz" }
 }
