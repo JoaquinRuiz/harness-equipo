@@ -465,6 +465,12 @@ viajan con el plugin. El marcador se cuenta desde v0.3.1 porque forma parte de c
   sistema primero en el PATH: `ver_toma.py`, `resumen_tanda.py`, `demo_commit.sh`, el scaffold de los evals y
   `distribucion.sh` funcionan (relanzan con Python 3.14).
 
+## Primera apertura del proyecto (2026-10-14)
+
+Con el `.claude/settings.json` del proyecto, Claude Code 2.1.294 añade el marketplace y marca el plugin como
+activo al confiar en la carpeta, pero no lo instala: hasta `claude plugin install equipo@harness-equipo --scope
+project`, `/plugin` da un error de caché y ningún hook se ejecuta. Detalle en `distribucion_proyecto.md`.
+
 ## Calibración del auditor y de los hooks
 `lab/calibrar.py`, harness v0.3.1: 80 casos (40 de estado, 5 de montaje de las condiciones y 35 de entrada), 0 fallos. Montaje: con `toma.montar`, el mismo que usan `correr.py`, `prueba_hooks.py` y `directo.py`, C y D llevan el marcador `.harness-equipo` (sin él, una reproducción de C con v0.3.1 mediría B más la skill con los hooks apagados) y A y B no; ninguna lleva `.claude/`; y `toma.MARCADOR` coincide con `reglas.MARCADOR`. Nuevos en v0.3.1: repo sin
 marcador con R1 rota (ningún hook actúa; el auditor sí la ve), repo con marcador y sin `.venv` con un `import
